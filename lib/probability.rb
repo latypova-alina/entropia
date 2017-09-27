@@ -1,10 +1,11 @@
 require "pry-rails"
 class Probability
-  attr_accessor :text_info, :char_p_array
+  attr_accessor :text_info, :char_p_array, :symbols_dependency_matrix
 
   def initialize(text_info)
     @text_info = text_info
     @char_p_array = []
+    @symbols_dependency_matrix = text_info.symbols_dependency_matrix
     prepare_probability_array
   end
 
@@ -25,4 +26,11 @@ class Probability
     end
     char_p_array
   end
+
+  def count_dependant_letters_probability
+    @symbols_dependency_matrix.each_with_index do |element, row, col|
+      @symbols_dependency_matrix[row, col][element.keys[0]] = element.values[0]/(text_info.char_count/2)
+    end
+  end
+
 end
