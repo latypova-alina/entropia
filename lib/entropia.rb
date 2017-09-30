@@ -18,8 +18,8 @@ class Entropia
 
   def count_dependant_letters_entropia_matrix
     @symbols_dependency_matrix.each_with_index do |element, row, col|
-      @symbols_dependency_matrix[row, col][element.keys[0]] = element.values[0] * Math.log2(element.values[0]) unless element.values[0] == 0.0
-      @matrix_entropia_sum = @matrix_entropia_sum + @symbols_dependency_matrix[row, col][element.keys[0]]
+      @symbols_dependency_matrix[row, col][element.keys[0]] = -(element.values[0] * Math.log2(element.values[0])).round(3) unless element.values[0] == 0.0
+      @matrix_entropia_sum = -(@matrix_entropia_sum + @symbols_dependency_matrix[row, col][element.keys[0]])
     end
   end
 end

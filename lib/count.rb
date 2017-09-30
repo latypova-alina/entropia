@@ -2,7 +2,26 @@ require_relative "alphabet.rb"
 require_relative "entropia.rb"
 require_relative "probability.rb"
 require_relative "text_info.rb"
+require_relative "public_post.rb"
 require "matrix.rb"
+
+PUBLICS =
+[{"TI_NA_PONTAH" => "-36166073"},
+{"NE_MY_TAKIE" => "-34378420"},
+{"OBNULYAY" => "-33339790"},
+{"BRAT_TOLKO_DERJIS" => "-32194500"},
+{"THIN_QUEEN" => "-64403009"},
+{"U_NAS_SVOY_RAY" => "-49272117"},
+{"DIANA_SHURIGINA" => "-140892492"},
+{"LENTACH" => "-29534144"},
+{"ART_OR_BULLSHIT" => "-33334108"},
+{"MMMM_VKUSNYATINA" => "-72133851"},
+{"PERESKAZANO" => "-79419972"},
+{"GOOGLE_ZAPROSY" => "-91421416"},
+{"PODSLUSHANO" => "-34215577"},
+{"PIKABU" => "-31480508"},
+{"Batrachospermum" => "-85330"}]
+
 
 class Matrix
   def []=(row, col, x)
@@ -10,25 +29,75 @@ class Matrix
   end
 end
 
-russian_alphabet = Alphabet.new
-russian_alphabet.add_to_alphabet(('А'..'я').to_a)
-russian_alphabet.add_to_alphabet(('0'..'9').to_a)
-russian_alphabet.add_to_alphabet(['.', '?', ',', '!', ':', ';', ' ', '"', "\n"].to_a)
-russian_alphabet.initialize_symbols_amount
+def russian_alphabet
+  russian_alphabet = Alphabet.new
+  russian_alphabet.add_to_alphabet(('А'..'я').to_a)
+  russian_alphabet.add_to_alphabet(('0'..'9').to_a)
+  russian_alphabet.add_to_alphabet(['.', '?', ',', '!', ':', ';', ' ', '"', "\n"].to_a)
+  russian_alphabet
+end
 
-poem = TextInfo.new("Пророк.txt", russian_alphabet)
-poem_probability = Probability.new(poem)
-poem_entropia = Entropia.new(poem_probability)
-poem.prepare_dependency_matrix
-poem.count_dependant_letters_amount
-poem_probability.count_dependant_letters_probability
-poem_probability.symbols_dependency_matrix.each do |element|
-  puts element if element.values[0] > 0.0
+def write_to_file(heading, text)
+  open('file.txt', 'a') { |f|
+    f << "\n#{heading}\n\n"
+    text.each do |element|
+      f << "#{element}\n" unless element.values[0] == 0.0
+    end
+  }
 end
-poem_entropia.count_dependant_letters_entropia_matrix
-poem_entropia.symbols_dependency_matrix.each do |element|
-  puts element if element.values[0] != 0.0
+
+def write_matrix_to_file(heading, text)
+  open('file.txt', 'a') { |f|
+    f << "\n#{heading}\n\n"
+    for i in 0...text.row_count
+      text.row(i).each do |e|
+        f << "#{e} "
+      end
+      f << "\n"
+    end
+  }
 end
-puts poem_probability.count_probability
-puts poem_entropia.count_entropia
+
+def letters_amount(alphabet, poem)
+  poem.prepare_chars_info
+  poem.symbols_amount_array
+end
+
+def probability(poem)
+  poem_probability = Probability.new(poem)
+  poem_probability.count_probability
+  poem_probability.char_p_array
+end
+
+R_A = russian_alphabet
+R_A.initialize_symbols_amount
+
+def count(source)
+  text = TextInfo.new(source, R_A)
+  open('file.txt', 'a') { |f| f << "\n\n#{source}\n\n" }
+  write_to_file("КОЛИЧЕСТВО БУКВ:", letters_amount(R_A, text))
+  write_to_file("ВЕРОЯТНОСТЬ", probability(text))
+  text.prepare_dependency_matrix
+  text.count_dependant_letters_amount
+  #write_matrix_to_file("КОЛИЧЕСТВО ЗАВИСИМЫХ БУКОВОК", poem.symbols_dependency_matrix)
+  write_to_file("КОЛИЧЕСТВО ЗАВИСИМЫХ БУКВ", text.symbols_dependency_matrix)
+  p_matrix = Probability.new(text)
+  p_matrix.count_dependant_letters_probability
+  #write_matrix_to_file("ВЕРОЯТНОСТЬ ЗАВИСИМЫХ БУКОВОК", p_matrix.symbols_dependency_matrix)
+  write_to_file("ВЕРОЯТНОСТЬ ЗАВИСИМЫХ БУКВ", p_matrix.symbols_dependency_matrix)
+  e_matrix = Entropia.new(p_matrix)
+  e_matrix.count_dependant_letters_entropia_matrix
+  write_to_file("ЭНТРОПИЯ ЗАВИСИМЫХ БУКВ", e_matrix.symbols_dependency_matrix)
+  #write_matrix_to_file("ЭНТРОПИЯ ЗАВИСИМЫХ БУКОВОК", p_matrix.symbols_dependency_matrix)
+  open('file.txt', 'a') { |f| f << "\n\nСУММА: #{e_matrix.matrix_entropia_sum}\n\n" }
+end
+
+PUBLICS.each do |public|
+  p = PublicPost.new()
+  p.posts(public.values[0])
+  File.open("#{public.keys[0]}.txt", "w") {|f| f.write(p.posts_texts) }
+  count("#{public.keys[0]}.txt")
+end
+
+
 

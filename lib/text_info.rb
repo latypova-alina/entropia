@@ -14,7 +14,7 @@ class TextInfo
     File.open(file, "r") do |file|
       file.each_char do |c|
         @char_count += 1.0
-        symbols_amount_array[alphabet.index(c)][c] += 1.0
+        symbols_amount_array[alphabet.index(c)][c] += 1.0 if alphabet.include?(c)
       end
     end
   end
@@ -22,7 +22,7 @@ class TextInfo
   def prepare_dependency_matrix
     @symbols_dependency_matrix.each_with_index.each do |element, row, col|
       alphabet.each do |letter|
-        @symbols_dependency_matrix[row, col] = {"#{alphabet[col]}|#{alphabet[row]}" => 0.0}
+        @symbols_dependency_matrix[row, col] = {"#{alphabet[col]}_#{alphabet[row]}" => 0.0}
       end
     end
   end
@@ -30,9 +30,10 @@ class TextInfo
   def count_dependant_letters_amount
     File.open(file, "r") do |file|
       file.each_line do |line|
-        line.scan(/../).each do |two_letters|
+        for i in 0...(line.length - 1)
+          two_letters = [line[i], line[i+1]]
           @symbols_dependency_matrix.each_with_index do |element, row, col|
-            regex = "#{two_letters[0]}|#{two_letters[1]}"
+            regex = "#{two_letters[0]}_#{two_letters[1]}"
             if element.keys[0] == regex
               @symbols_dependency_matrix[row, col][regex] += 1.0
             end

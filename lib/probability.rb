@@ -21,15 +21,14 @@ class Probability
     char_count = text_info.char_count
     File.open(text_info.file, "r") do |file|
       file.each_char do |c|
-        char_p_array[alphabet.index(c)][c] = (symbols_amount[alphabet.index(c)][c] / char_count).round(5)
+        char_p_array[alphabet.index(c)][c] = (symbols_amount[alphabet.index(c)][c] / char_count).round(3) if alphabet.include?(c)
       end
     end
-    char_p_array
   end
 
   def count_dependant_letters_probability
     @symbols_dependency_matrix.each_with_index do |element, row, col|
-      @symbols_dependency_matrix[row, col][element.keys[0]] = element.values[0]/(text_info.char_count/2)
+      @symbols_dependency_matrix[row, col][element.keys[0]] = (element.values[0]/(text_info.char_count-1)).round(5)
     end
   end
 
