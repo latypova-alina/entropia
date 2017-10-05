@@ -11,15 +11,34 @@ class Entropia
   def count_entropia
     probability_array.each do |p|
       value = p.values.first
-      @letter_entropia_sum = @letter_entropia_sum + value * Math.log2(value) unless value == 0.0
+      @letter_entropia_sum = @letter_entropia_sum - value * Math.log2(value) unless value == 0.0
     end
-    -@letter_entropia_sum
+    @letter_entropia_sum
+  end
+
+  def letter_has_probability?(letter_p)
+    probability_array.map{|e| e.keys[0]}.include?(letter_p)
+  end
+
+  def letter_probability(letter)
+    probability_array.find{|prob| prob[letter]}.values[0]
+  end
+
+  def information_countable?(symbol_probability, connected_probability)
+    connected_probability != 0.0 && symbol_probability
   end
 
   def count_dependant_letters_entropia_matrix
     @symbols_dependency_matrix.each_with_index do |element, row, col|
-      @symbols_dependency_matrix[row, col][element.keys[0]] = -(element.values[0] * Math.log2(element.values[0])).round(3) unless element.values[0] == 0.0
-      @matrix_entropia_sum = -(@matrix_entropia_sum + @symbols_dependency_matrix[row, col][element.keys[0]])
+      second_letter = element.keys.first[2]
+      symbol_p = letter_probability(second_letter) if letter_has_probability?(second_letter)
+      connected_p = element.values[0]
+      syllable = element.keys[0]
+      conditional_p = connected_p/symbol_p
+      if information_countable?(symbol_p, connected_p)
+        @symbols_dependency_matrix[row, col][syllable] = connected_p * Math.log2(conditional_p)
+      end
+      @matrix_entropia_sum = @matrix_entropia_sum - @symbols_dependency_matrix[row, col][syllable]
     end
   end
 end
