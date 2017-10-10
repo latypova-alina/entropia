@@ -1,5 +1,5 @@
 class TextInfo
-  attr_accessor :file, :alphabet, :char_count, :symbols_amount_array, :symbols_dependency_matrix
+  attr_accessor :file, :alphabet, :char_count, :symbols_amount_array, :symbols_dependency_matrix, :three_letters
 
   def initialize(file, alphabet)
     @file = file
@@ -7,6 +7,8 @@ class TextInfo
     @char_count = 0.0
     @symbols_amount_array = alphabet.symbols_amount_array
     @symbols_dependency_matrix = Matrix.build(@alphabet.length){0}
+    @three_letters = {}
+    @three_letters_p = {}
     prepare_chars_info
   end
 
@@ -41,5 +43,23 @@ class TextInfo
         end
       end
     end
+  end
+
+  def count_three_dependant_letters
+    @three_letters = {}
+    File.open(file, "r") do |file|
+      file.each_line do |line|
+        for i in 0...(line.length - 2)
+          three_chars = [line[i], line[i+1], line[i+2]]
+          regex = "#{three_chars[0]}_#{three_chars[1]}_#{three_chars[2]}"
+          if @three_letters[regex]
+            @three_letters[regex] += 1.0
+          else
+            @three_letters[regex] = 1.0
+          end
+        end
+      end
+    end
+    @three_letters
   end
 end

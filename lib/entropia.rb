@@ -1,11 +1,14 @@
 class Entropia
-  attr_accessor :probability_array, :letter_entropia_sum, :matrix_entropia_sum, :symbols_dependency_matrix
+  attr_accessor :probability_array, :letter_entropia_sum, :matrix_entropia_sum, :symbols_dependency_matrix, :three_letters_entropia_sum
 
   def initialize(probability)
     @probability_array = probability.char_p_array
     @symbols_dependency_matrix = probability.symbols_dependency_matrix
     @letter_entropia_sum = 0.0
     @matrix_entropia_sum = 0.0
+    @three_letters_p = probability.three_letters_p
+    @three_letters_info = {}
+    @three_letters_entropia_sum = 0.0
   end
 
   def count_entropia
@@ -40,5 +43,18 @@ class Entropia
       end
       @matrix_entropia_sum = @matrix_entropia_sum - @symbols_dependency_matrix[row, col][syllable]
     end
+  end
+
+  def count_three_letters_entropia
+    @three_letters_p.keys.each do |key|
+      if three_conditional_p(@three_letters_p[key], key[4])
+        @three_letters_info[key] = @three_letters_p[key] * Math.log2(three_conditional_p(@three_letters_p[key], key[4]))
+        @three_letters_entropia_sum = @three_letters_entropia_sum - @three_letters_info[key]
+      end
+    end
+  end
+
+  def three_conditional_p(three_letters_p, third_letter)
+    three_letters_p/letter_probability(third_letter) if letter_has_probability?(third_letter)
   end
 end

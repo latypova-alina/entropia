@@ -1,11 +1,14 @@
 require "pry-rails"
 class Probability
-  attr_accessor :text_info, :char_p_array, :symbols_dependency_matrix
+  attr_accessor :text_info, :char_p_array, :symbols_dependency_matrix, :three_letters, :three_letters_p
 
   def initialize(text_info)
     @text_info = text_info
+    @char_count = text_info.char_count
     @char_p_array = []
     @symbols_dependency_matrix = text_info.symbols_dependency_matrix
+    @three_letters = text_info.three_letters
+    @three_letters_p = {}
     prepare_probability_array
   end
 
@@ -32,4 +35,9 @@ class Probability
     end
   end
 
+  def count_three_dependant_letters_probability
+    binding.pry
+    @three_letters.keys.each{ |key| @three_letters_p[key] = @three_letters[key]/@char_count }
+    @three_letters_p
+  end
 end
